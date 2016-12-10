@@ -1,0 +1,33 @@
+<!doctype html>
+<title>Вход</title>
+{% if name %}
+  <h1>Hello {{ name }}!</h1>
+{% else %}
+  <form name="login" method="post" action"">
+  <p><b>*Ваш логин:</b><br>
+      <input name="username" type="text" size="20" value="{{ request.form.username }}">
+      <p><b>*Пароль:</b><br>
+      <input name="password" type="password" size="20" value="{{ request.form.password }}">
+    <p><b>Регистрация?</b>
+        <input name="register" type="checkbox" value="{{ request.form.register }}">
+    {% if register %}
+    <p><b>*Ваше имя:</b><br>
+        <input name="name" type="text" size="20" value="{{ request.form.name }}">
+    <p><b>*Номер:</b><br>
+        <input name="cellphone" type="text" size="20" value="{{ request.form.cellphone }}">
+        <br/>
+    <p><b>*Ваш адрес:</b><br>
+        <input name="address" type="text" size="20" value="{{ request.form.address }}">
+    <p><b>Email:</b><br>
+        <input name="email" type="text" size="20" value="{{ request.form.email }}">
+        <br/>
+    {% endif %}
+      <br/>
+      <input class="btn btn-default" type="submit" value="Вход">
+        <input class="btn btn-default" type="submit" href="/register" value="Регистрация">
+      {% if error %}
+        <p class="error"><strong>Error:</strong> {{ error }}
+      {% endif %}
+  </p>
+  </form>
+{% endif %}
