@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Shop</title>
+</head>
+<body>
+    <ul id="products">
+    {% for shop in shops %}
+        <li><a href={{ url_for('shop_page', shop_name=shop.name) }}>{{ shop.name }}</a><input type="checkbox" value=""></li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,10 +1,13 @@
 import psycopg2
 import psycopg2.extras
+from psycopg2.extensions import AsIs
 
 try:
     conn = psycopg2.connect("dbname='project' user='Van-ess0' host='localhost' password=''")
     cr = conn.cursor()
     crd = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    crd.execute("""SELECT * FROM customer""")
+    print(crd.fetchall())
 except Exception as e:
     print(e)
     print("I am unable to connect to the database")
@@ -45,22 +48,29 @@ class AbstractORM():
 
     @classmethod
     def create(cls, vals):
+        print("HELLOOOO!O!O!O!O!O")
         keys = vals.keys()
-        fields = ', '.join(keys)
-        SQL = '''INSERT INTO {table}({fields}) VALUES (%s)'''.format(table=cls.table, fields=fields)
+        print(keys)
+        columns = ', '.join(keys)
+        values = [vals.get(key) for key in keys]
+        SQL = '''INSERT INTO {table}(%s) VALUES %s;'''.format(table=cls.table)
         try:
             print("HELLO")
-            cr.execute(SQL, ([vals.get(key) for key in keys],))
-            print(cr.fetchall())
+            print(crd.mogrify(SQL, (AsIs(columns), tuple(values))))
+            SQL = crd.mogrify(SQL, (AsIs(columns), tuple(values)))
+            crd.execute(SQL)
         except Exception as e:
             print(e)
             raise e
-
-        for key in vals.iterkeys():
-            statement.append("{key} = {val}".format(key, vlas.get(key, '')))
-        statement = ' AND '.join(fields)
+        # TODO: rewrite to avoid SQL injections
+        statement = []
+        for key in vals.keys():
+            statement.append("'{key}' = '{val}'".format(key=key, val=vals.get(key, '')))
+        statement = ' AND '.join(statement)
         SQL = '''SELECT * FROM {table} WHERE {statement}'''.format(table=cls.table, statement=statement)
+        print(SQL)
         cr.execute(SQL)
+        print(cr.fetchall())
         new_obj = cls(cr.fetchone())
         return new_obj
 
@@ -70,7 +80,18 @@ class Product(AbstractORM):
 
     def __init__(self, data):
         self.id, self.type_id, self.name, self.articul, self.color, self.price, self.number_left, self.diller_id, self.shop_id = data
-        self.type = '' # TODO: get type from database by id
+        self.type = ''   # TODO: get type from database by id
+
+
+    @classmethod
+    def get_by_shop(cls, shop_name):
+        SQL = '''
+            SELECT {table}.id, {table}.type_id, {table}.name, {table}.articul, {table}.color, {table}.price, {table}.number_left, {table}.diller_id, {table}.shop_id
+            FROM {table}
+            JOIN shop sh on sh.id = {table}.shop_id
+            WHERE sh.name = '{shop_name}' '''.format(table=cls.table, shop_name=shop_name)
+        cr.execute(SQL)
+        return [cls(line) for line in cr.fetchall()]
 
 
 class Type(AbstractORM):

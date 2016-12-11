@@ -8,8 +8,6 @@
       <input name="username" type="text" size="20" value="{{ request.form.username }}">
       <p><b>*Пароль:</b><br>
       <input name="password" type="password" size="20" value="{{ request.form.password }}">
-    <p><b>Регистрация?</b>
-        <input name="register" type="checkbox" value="{{ request.form.register }}">
     {% if register %}
     <p><b>*Ваше имя:</b><br>
         <input name="name" type="text" size="20" value="{{ request.form.name }}">
@@ -24,10 +22,13 @@
     {% endif %}
       <br/>
       <input class="btn btn-default" type="submit" value="Вход">
-        <input class="btn btn-default" type="submit" href="/register" value="Регистрация">
-      {% if error %}
-        <p class="error"><strong>Error:</strong> {{ error }}
+          </form>
+      <form name="register" method="get" action"">
+        <input class="btn btn-default" type="submit" value="Регистрация">
+      </form>
+
+          {% if error %}
+          <p class="error"><strong>Error:</strong> {{ error }}
       {% endif %}
-  </p>
-  </form>
+          </p>
 {% endif %}
