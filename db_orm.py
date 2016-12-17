@@ -56,16 +56,17 @@ class AbstractORM():
         SQL = '''INSERT INTO {table}(%s) VALUES %s;'''.format(table=cls.table)
         try:
             print("HELLO")
-            print(crd.mogrify(SQL, (AsIs(columns), tuple(values))))
-            SQL = crd.mogrify(SQL, (AsIs(columns), tuple(values)))
-            crd.execute(SQL)
+            print(cr.mogrify(SQL, (AsIs(columns), tuple(values))))
+            SQL = cr.mogrify(SQL, (AsIs(columns), tuple(values)))
+            cr.execute(SQL)
+            conn.commit()
         except Exception as e:
             print(e)
             raise e
         # TODO: rewrite to avoid SQL injections
         statement = []
         for key in vals.keys():
-            statement.append("'{key}' = '{val}'".format(key=key, val=vals.get(key, '')))
+            statement.append("{key} = '{val}'".format(key=key, val=vals.get(key, '')))
         statement = ' AND '.join(statement)
         SQL = '''SELECT * FROM {table} WHERE {statement}'''.format(table=cls.table, statement=statement)
         print(SQL)
