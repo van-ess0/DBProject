@@ -29,7 +29,7 @@ def add_to_cart(id):
         })
     else:
         order_line.write({'qty': order_line.qty + 1})
-    current_order.order_lines[id] = current_order.order_lines.get(id) + 1
+    current_order.order_lines[id] = current_order.order_lines.get(id, 0) + 1
 
 
 @app.route('/')

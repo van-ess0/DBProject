@@ -59,9 +59,9 @@ class AbstractORM():
     def create(cls, vals):
         '''Get dict of vals return new object with creation in DB'''
         keys = vals.keys()
-        columns = ', '.join(keys)
+        columns = ', '.join('"{}"'.format(key) for key in keys)
         values = [vals.get(key) for key in keys]
-        SQL = '''INSERT INTO {table}(%s) VALUES %s RETURNING *;'''.format(table=cls.table)
+        SQL = '''INSERT INTO "{table}" (%s) VALUES %s RETURNING *'''.format(table=cls.table)
         try:
             SQL = cr.mogrify(SQL, (AsIs(columns), tuple(values)))
             cr.execute(SQL)
@@ -130,7 +130,21 @@ class OrderPosition(AbstractORM):
 
     def __init__(self, data):
         self.id, self.product_id, self.qty, self.order_id = data
-        # self.product_id =
+
+
+    @classmethod
+    def get_by_order_and_product(cls, order_id, product_id):
+        SQL = """SELECT * FROM "{table}" WHERE order_id = {order_id} AND product_id = {order_id}""".format(
+            table=cls.table,
+            order_id=order_id,
+            product_id=product_id,
+        )
+        cr.execute(SQL)
+        data = cr.fetchone()
+        if data:
+            return cls(data)
+        else:
+            return False
 
 
 class Shop(AbstractORM):
