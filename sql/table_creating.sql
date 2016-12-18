@@ -51,7 +51,7 @@ adress varchar(1000) NOT NULL,
 cellphone varchar(80) NOT NULL,
 email varchar(80),
 pwd_hash varchar(40),
-login varchar(80)
+login varchar(80) NOT NULL UNIQUE
 );
 
 CREATE TABLE worker (
@@ -73,5 +73,6 @@ CREATE TABLE order_position (
 id serial NOT NULL primary key,
 product_id int references product(id),
 qty int NOT NULL CHECK (qty > 0),
-order_id int references "order"(id)
+order_id int references "order"(id),
+UNIQUE (product_id, order_id)
 );
