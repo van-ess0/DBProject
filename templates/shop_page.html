@@ -10,7 +10,7 @@
         {% for item in products %}
             <li>
                 <a href="{{ url_for('product_page', product_id=item.id) }}">{{ item.name }}</a>
-                <input type="button" value="Add" name="{{ item.id }}">
+                <input type="submit" value="Add" name="{{ item.id }}">
             </li>
         {% endfor %}
     </ul>

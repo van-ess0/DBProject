@@ -1,12 +1,35 @@
 import db_orm
 
 from hashlib import sha1
+import datetime
 import os
 
 from flask import *
 
 app = Flask(__name__)
 app.debug = True
+
+current_order = None
+current_user = None
+
+def add_to_cart(id):
+    global current_order, current_user
+    if not current_order:
+        current_order = db_orm.Order.create({
+            'date': datetime.date.today(),
+            'customer_id': current_user.id,
+        })
+        current_order.order_lines = {}
+    order_line = db_orm.OrderPosition.get_by_order_and_product(current_order.id, id)
+    if not order_line:
+        order_line = db_orm.OrderPosition.create({
+            'product_id': id,
+            'order_id': current_order.id,
+            'qty': 1,
+        })
+    else:
+        order_line.write({'qty': order_line.qty + 1})
+    current_order.order_lines[id] = current_order.order_lines.get(id) + 1
 
 
 @app.route('/')
@@ -20,6 +43,7 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
+    global current_user
     error = None
     register = True
     if 'POST' == request.method:
@@ -41,10 +65,11 @@ def register_page():
                     'email': request.form['email'],
                 })
                 app.logger.info("Created new user with id {}".format(new_user.id))
+                current_user = new_user
+                return redirect(url_for('shop_select_page'))
             except Exception as e:
                 error = e
                 return render_template('login_page.html', error=error, register=register)
-            return redirect(url_for('shop_select_page'))
         else:
             error = "Не все обязательные поля заполнены"
             return render_template('login_page.html', error=error, register=register)
@@ -60,6 +85,7 @@ def shop_select_page():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
+    global current_user
     error = None
     register = False
     users = db_orm.Customer.get_all()
@@ -69,10 +95,7 @@ def login_page():
             for user in users:
                 if request.form['username'] == user.login and sha1(
                         request.form['password'].encode('utf-8')).hexdigest() == user.pwd_hash:
-                    flag = True
-                    resp = make_response(render_template('login_page.html'))
-                    resp.set_cookie('username', request.form['username'])
-                    session['logged_uses'] = session.get('logged_users', []).append(request.form['username'])
+                    current_user = user
                     return redirect(url_for('shop_select_page'))
             if not flag:
                 error = 'Invalid Credentials. Please try again.'
@@ -87,7 +110,12 @@ def shop_page(shop_name=None):
         abort(404)
     products = db_orm.Product.get_by_shop(shop_name)
     if request.method == 'POST':
-        print('helo', request.form)
+        ids = [product.id for product in products]
+        for id in ids:
+            if request.form.get(str(id)):
+                add_to_cart(id)
+            pass
+        print('hello', request.form)
     return render_template('shop_page.html', products=products)
 
 
