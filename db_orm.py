@@ -3,14 +3,14 @@ import psycopg2.extras
 from psycopg2.extensions import AsIs
 
 try:
+    # SuperUser cursor
     conn = psycopg2.connect("dbname='project' user='Van-ess0' host='localhost' password=''")
     cr = conn.cursor()
     crd = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    crd.execute("""SELECT * FROM customer""")
-    print(crd.fetchall())
 except Exception as e:
     print(e)
     print("I am unable to connect to the database")
+
 
 class AbstractORM():
     '''Abstact ORM CLASS'''
@@ -18,12 +18,18 @@ class AbstractORM():
     id = 0
 
     @classmethod
+    def get_by_id(cls, id):
+        '''REturns the object of element with id from parameter'''
+        SQL = '''SELECT * FROM {table} WHERE id = %s'''.format(table=cls.table)
+        cr.execute(SQL, (id, ))
+        return cls(cr.fetchone())
+
+    @classmethod
     def get_all(cls):
         '''returns list of objects'''
         SQL = '''SELECT * FROM {table}'''.format(table=cls.table)
         cr.execute(SQL)
         return [cls(line) for line in cr.fetchall()]
-
 
     def get(self, *fields):
         '''Get selected fields for this model,
@@ -34,10 +40,10 @@ class AbstractORM():
         return crd.fetchone()
 
     def write(self, vals):
-        '''gets dict of vals, writes into table'''
+        '''gets dict of vals, writes into table. Rewrites object with new data'''
         fields = []
         for key in vals.keys():
-            fields.append("{key} = {'val'}".format(key, vals.get(key, ''))) # TODO: rewrite
+            fields.append("{key} = '{val}'".format(key, vals.get(key, '')))   # TODO: rewrite
         fields = ', '.join(fields)
         SQL = '''UPDATE {table} SET {fields} WHERE id = {id}'''.format(table=self.table, fields=fields, id=self.id)
         try:
@@ -45,33 +51,24 @@ class AbstractORM():
         except Exception as e:
             print(e)
             raise e
+        SQL = ''' SELECT * FROM {table} WHERE id = {id}'''.format(table=self.table, id=self.id)
+        cr.execute(SQL)
+        self = self.__class__(cr.fetchone())
 
     @classmethod
     def create(cls, vals):
-        print("HELLOOOO!O!O!O!O!O")
+        '''Get dict of vals return new object with creation in DB'''
         keys = vals.keys()
-        print(keys)
         columns = ', '.join(keys)
         values = [vals.get(key) for key in keys]
-        SQL = '''INSERT INTO {table}(%s) VALUES %s;'''.format(table=cls.table)
+        SQL = '''INSERT INTO {table}(%s) VALUES %s RETURNING *;'''.format(table=cls.table)
         try:
-            print("HELLO")
-            print(cr.mogrify(SQL, (AsIs(columns), tuple(values))))
             SQL = cr.mogrify(SQL, (AsIs(columns), tuple(values)))
             cr.execute(SQL)
             conn.commit()
         except Exception as e:
             print(e)
             raise e
-        # TODO: rewrite to avoid SQL injections
-        statement = []
-        for key in vals.keys():
-            statement.append("{key} = '{val}'".format(key=key, val=vals.get(key, '')))
-        statement = ' AND '.join(statement)
-        SQL = '''SELECT * FROM {table} WHERE {statement}'''.format(table=cls.table, statement=statement)
-        print(SQL)
-        cr.execute(SQL)
-        print(cr.fetchall())
         new_obj = cls(cr.fetchone())
         return new_obj
 
@@ -81,7 +78,10 @@ class Product(AbstractORM):
 
     def __init__(self, data):
         self.id, self.type_id, self.name, self.articul, self.color, self.price, self.number_left, self.diller_id, self.shop_id = data
-        self.type = ''   # TODO: get type from database by id
+
+        # self.type_id = Type.get_by_id(self.type_id)
+        # self.diller_id = Diller.get_by_id(self.diller_id)
+        # self.shop_id = Shop.get_by_id(self.shop_id)
 
 
     @classmethod
@@ -121,6 +121,8 @@ class Order(AbstractORM):
 
     def __init__(self, data):
         self.id, self.date, self.worker_id, self.customer_id = data
+        # self.worker_id = Worker.get_by_id(self.worker_id)
+        # self.customer_id = Customer.get_by_id(self.customer_id)
 
 
 class OrderPosition(AbstractORM):
@@ -128,6 +130,7 @@ class OrderPosition(AbstractORM):
 
     def __init__(self, data):
         self.id, self.product_id, self.qty, self.order_id = data
+        # self.product_id =
 
 
 class Shop(AbstractORM):

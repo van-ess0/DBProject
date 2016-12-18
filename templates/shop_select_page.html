@@ -7,7 +7,7 @@
 <body>
     <ul id="products">
     {% for shop in shops %}
-        <li><a href={{ url_for('shop_page', shop_name=shop.name) }}>{{ shop.name }}</a><input type="checkbox" value=""></li>
+        <li><a href={{ url_for('shop_page', shop_name=shop.name) }}>{{ shop.name }}</a></li>
     {% endfor %}
     </ul>
 </body>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.name }}</title>
+</head>
+<body>
+    <h1>{{ product.name }}</h1>
+    <ul>
+        <li>{{ 'Артикул: {}'.format(product.articul) }}</li>
+        <li>{{ 'Цвет: {}'.format(product.color) }}</li>
+        <li>{{ 'Тип: {}'.format(product.type_id.name) }}</li>
+        <li>{{ 'Продавец: {}'.format(product.diller_id.company) }}</li>
+        <li>{{ 'Магазин: {}'.format(product.shop_id.name) }}</li>
+        <li>{{ 'Осталось: {}'.format(product.number_left) }}</li>
+        <li>{{ 'Цена: {}'.format(product.price) }}</li>
+    </ul>
+    <a href="{{ url_for('shop_page', shop_name=product.shop_id.name) }}">Назад в магазин</a>
+</body>
+</html>

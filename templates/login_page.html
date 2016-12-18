@@ -1,34 +1,33 @@
 <!doctype html>
 <title>Вход</title>
 {% if name %}
-  <h1>Hello {{ name }}!</h1>
+    <h1>Hello {{ name }}!</h1>
 {% else %}
-  <form name="login" method="post" action"">
-  <p><b>*Ваш логин:</b><br>
-      <input name="username" type="text" size="20" value="{{ request.form.username }}">
-      <p><b>*Пароль:</b><br>
-      <input name="password" type="password" size="20" value="{{ request.form.password }}">
-    {% if register %}
-    <p><b>*Ваше имя:</b><br>
-        <input name="name" type="text" size="20" value="{{ request.form.name }}">
-    <p><b>*Номер:</b><br>
-        <input name="cellphone" type="text" size="20" value="{{ request.form.cellphone }}">
+    <form name="login" method="post" action"">
+    <p><b>*Ваш логин:</b><br>
+        <input name="username" type="text" size="20" value="{{ request.form.username }}">
+    <p><b>*Пароль:</b><br>
+        <input name="password" type="password" size="20" value="{{ request.form.password }}">
+        {% if register %}
+            <p><b>*Ваше имя:</b><br>
+                <input name="name" type="text" size="20" value="{{ request.form.name }}">
+            <p><b>*Номер:</b><br>
+                <input name="cellphone" type="text" size="20" value="{{ request.form.cellphone }}">
+                <br/>
+            <p><b>*Ваш адрес:</b><br>
+                <input name="address" type="text" size="20" value="{{ request.form.address }}">
+            <p><b>Email:</b><br>
+            <input name="email" type="text" size="20" value="{{ request.form.email }}">
+            <br/>
+        {% endif %}
         <br/>
-    <p><b>*Ваш адрес:</b><br>
-        <input name="address" type="text" size="20" value="{{ request.form.address }}">
-    <p><b>Email:</b><br>
-        <input name="email" type="text" size="20" value="{{ request.form.email }}">
-        <br/>
-    {% endif %}
-      <br/>
-      <input class="btn btn-default" type="submit" value="Вход">
-          </form>
-      <form name="register" method="get" action"">
-        <input class="btn btn-default" type="submit" value="Регистрация">
-      </form>
+        <input class="btn btn-default" type="submit" value="{{ 'Вход' if not register else 'Регистрация' }}">
+        </form>
+        <a href="{{ url_for('register_page') if not register else url_for('login_page') }}">
+            {{ 'Регистрация' if not register else 'Уже зарегистрирован' }}
+        </a>
 
-          {% if error %}
-          <p class="error"><strong>Error:</strong> {{ error }}
-      {% endif %}
-          </p>
+        {% if error %}
+            <p class="error"><strong>Error:</strong> {{ error }}</p>
+        {% endif %}
 {% endif %}

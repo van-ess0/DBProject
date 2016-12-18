@@ -37,11 +37,11 @@ INSERT INTO product (type_id, "name", articul, color, price, number_left, diller
 	(4, 'Techno', 'UU4653', 'silver', 3489.50, 20, 1, 1);
 	
 
-INSERT INTO customer ("name", adress, cellphone)
-	VALUES ('Barsukov S.A.', 'Nekrasova 36', '+79817869080'),
-	('Frolov E.G.', 'Chicherina 5', '239884'),
-	('Perepelov G.K.', 'Bohnyaka 11', '+78957893434'),
-	('Zubenko E.O.', 'Lenina 5', '9801786');
+INSERT INTO customer ("name", adress, cellphone, login, pwd_hash)
+	VALUES ('Barsukov S.A.', 'Nekrasova 36', '+79817869080', 'barsuk', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
+	('Frolov E.G.', 'Chicherina 5', '239884', 'froloff', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
+	('Perepelov G.K.', 'Bohnyaka 11', '+78957893434', 'perepel', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
+	('Zubenko E.O.', 'Lenina 5', '9801786', 'zubizubi', 'd033e22ae348aeb5660fc2140aec35850c4da997');
 
 INSERT INTO worker ("name", shop_id, cellphone)
 	VALUES ('Mihalkov A.F.', 1, '6874567'),
