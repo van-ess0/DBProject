@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ваш заказ</title>
+</head>
+<body>
+    <h1>{{ "Заказ №{}".format(order.id) }}</h1>
+    <table>
+        {% for line in lines %}
+            <tr>
+                <td>{{ line.product_id.name }}</td>
+                <td>{{ line.qty }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>

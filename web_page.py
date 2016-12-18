@@ -30,6 +30,7 @@ def add_to_cart(id):
     else:
         order_line.write({'qty': order_line.qty + 1})
     current_order.order_lines[id] = current_order.order_lines.get(id, 0) + 1
+    print(current_order.__dict__)
 
 
 @app.route('/')
@@ -129,6 +130,19 @@ def product_page(product_id=None):
     product.shop_id = db_orm.Shop.get_by_id(product.shop_id)
     print(product.diller_id.company)
     return render_template('product_page.html', product=product)
+
+
+@app.route('/order', methods=['POST', "GET"])
+def order_page():
+    global current_order
+    if not current_order:
+        return render_template('shop_select_page.html')
+    lines = []
+    for id in current_order.order_lines.keys():
+        new_line = db_orm.OrderPosition.get_by_order_and_product(current_order.id, id)
+        new_line.product_id = db_orm.Product.get_by_id(new_line.product_id)
+        lines.append(new_line)
+    return render_template('order_page.html', order=current_order, lines=lines)
 
 
 app.secret_key = "\xa80\xe7g\xac<>\xb1$\xfa0\x1bK\x02\xb1aeKQ\x9f\xfa\xfb\xc1\xa4"

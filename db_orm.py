@@ -19,7 +19,7 @@ class AbstractORM():
 
     @classmethod
     def get_by_id(cls, id):
-        '''REturns the object of element with id from parameter'''
+        '''Returns the object of element with id from parameter'''
         SQL = '''SELECT * FROM {table} WHERE id = %s'''.format(table=cls.table)
         cr.execute(SQL, (id, ))
         return cls(cr.fetchone())
@@ -43,11 +43,12 @@ class AbstractORM():
         '''gets dict of vals, writes into table. Rewrites object with new data'''
         fields = []
         for key in vals.keys():
-            fields.append("{key} = '{val}'".format(key, vals.get(key, '')))   # TODO: rewrite
+            fields.append("{key} = {val}".format(key=key, val=vals.get(key, '')))   # TODO: rewrite
         fields = ', '.join(fields)
-        SQL = '''UPDATE {table} SET {fields} WHERE id = {id}'''.format(table=self.table, fields=fields, id=self.id)
+        SQL = '''UPDATE "{table}" SET {fields} WHERE id = {id}'''.format(table=self.table, fields=fields, id=self.id)
         try:
             cr.execute(SQL)
+            conn.commit()
         except Exception as e:
             print(e)
             raise e
@@ -134,7 +135,7 @@ class OrderPosition(AbstractORM):
 
     @classmethod
     def get_by_order_and_product(cls, order_id, product_id):
-        SQL = """SELECT * FROM "{table}" WHERE order_id = {order_id} AND product_id = {order_id}""".format(
+        SQL = """SELECT * FROM "{table}" WHERE order_id = {order_id} AND product_id = {product_id}""".format(
             table=cls.table,
             order_id=order_id,
             product_id=product_id,
