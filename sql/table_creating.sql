@@ -38,7 +38,7 @@ type_id int NOT NULL references "type"(id),
 "name" varchar(80) NOT NULL,
 articul varchar(80) NOT NULL,
 color varchar(80),
-price real NOT NULL,
+price real NOT NULL CHECK (price > 0),
 number_left int NOT NULL,
 diller_id int references diller(id),
 shop_id int references shop(id)
@@ -72,6 +72,6 @@ customer_id int references customer(id)
 CREATE TABLE order_position (
 id serial NOT NULL primary key,
 product_id int references product(id),
-qty int NOT NULL,
+qty int NOT NULL CHECK (qty > 0),
 order_id int references "order"(id)
 );
