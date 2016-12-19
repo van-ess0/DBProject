@@ -2,7 +2,7 @@ import db_orm
 
 from hashlib import sha1
 import datetime
-import os
+import random
 
 from flask import *
 
@@ -12,12 +12,101 @@ app.debug = True
 current_order = None
 current_user = None
 
+def export_order_to_xml():
+    from lxml import etree
+    order = etree.Element("order")
+
+    id = etree.Element("id")
+    id.text = str(current_order.id)
+    order.append(id)
+
+    current_order.worker_id = db_orm.Worker.get_by_id(current_order.worker_id)
+    worker = etree.Element("worker")
+    order.append(worker)
+    worker_id = etree.Element("id")
+    worker_id.text = str(current_order.worker_id.id)
+    worker.append(worker_id)
+
+    current_order.worker_id.shop_id = db_orm.Shop.get_by_id(current_order.worker_id.shop_id)
+    worker_shop = etree.Element("shop")
+    worker.append(worker_shop)
+
+    worker_shop_id = etree.Element("id")
+    worker_shop_id.text = str(current_order.worker_id.shop_id.id)
+    worker_shop.append(worker_shop_id)
+
+    worker_shop_adress = etree.Element("adress")
+    worker_shop_adress.text = current_order.worker_id.shop_id.adress
+    worker_shop.append(worker_shop_adress)
+
+    worker_shop_name = etree.Element("name")
+    worker_shop_name.text = current_order.worker_id.shop_id.name
+    worker_shop.append(worker_shop_name)
+
+    worker_shop_cellphone = etree.Element("cellphone")
+    worker_shop_cellphone.text = current_order.worker_id.shop_id.cellphone
+    worker_shop.append(worker_shop_cellphone)
+
+    worker_shop_email = etree.Element("email")
+    worker_shop_email.text = current_order.worker_id.shop_id.email
+    worker_shop.append(worker_shop_email)
+
+    worker_name = etree.Element("name")
+    worker_name.text = current_order.worker_id.name
+    worker.append(worker_name)
+
+    worker_cellphone = etree.Element("cellphone")
+    worker_cellphone.text = current_order.worker_id.cellphone
+    worker.append(worker_cellphone)
+
+    worker_email = etree.Element("email")
+    worker_email.text = current_order.worker_id.email
+    worker.append(worker_email)
+
+    current_order.customer_id = db_orm.Customer.get_by_id(current_order.customer_id)
+    customer = etree.Element("customer")
+    order.append(customer)
+
+    customer_id = etree.Element("id")
+    customer_id.text = str(current_order.customer_id.id)
+    customer.append(customer_id)
+
+    customer_name = etree.Element("name")
+    customer_name.text = current_order.customer_id.name
+    customer.append(customer_name)
+
+    customer_adress = etree.Element("adress")
+    customer_adress.text = current_order.customer_id.adress
+    customer.append(customer_adress)
+
+    customer_cellphone = etree.Element("cellphone")
+    customer_cellphone.text = current_order.customer_id.cellphone
+    customer.append(customer_cellphone)
+
+    customer_email = etree.Element("email")
+    customer_email.text = current_order.customer_id.email
+    customer.append(customer_email)
+
+    customer_login = etree.Element("login")
+    customer_login.text = current_order.customer_id.login
+    customer.append(customer_login)
+
+    date = etree.Element("date")
+    date.text = str(current_order.date)
+    order.append(date)
+
+    print(etree.tostring(order, pretty_print=True))
+    # TODO: Add lines
+    # TODO: Export into file
+
+
 def add_to_cart(id):
     global current_order, current_user
     if not current_order:
         current_order = db_orm.Order.create({
             'date': datetime.date.today(),
             'customer_id': current_user.id,
+            'worker_id': random.randrange(1, 5)
         })
         current_order.order_lines = {}
     order_line = db_orm.OrderPosition.get_by_order_and_product(current_order.id, id)
@@ -142,7 +231,10 @@ def order_page():
         new_line = db_orm.OrderPosition.get_by_order_and_product(current_order.id, id)
         new_line.product_id = db_orm.Product.get_by_id(new_line.product_id)
         lines.append(new_line)
-    return render_template('order_page.html', order=current_order, lines=lines)
+    total = sum((line.product_id.price * line.qty) for line in lines)
+    if request.method == 'POST':
+        export_order_to_xml()
+    return render_template('order_page.html', order=current_order, lines=lines, total=total)
 
 
 app.secret_key = "\xa80\xe7g\xac<>\xb1$\xfa0\x1bK\x02\xb1aeKQ\x9f\xfa\xfb\xc1\xa4"

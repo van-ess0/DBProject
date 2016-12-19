@@ -11,9 +11,14 @@
             <tr>
                 <td>{{ line.product_id.name }}</td>
                 <td>{{ line.qty }}</td>
+                <td>{{ line.product_id.price * line.qty }}</td>
             </tr>
         {% endfor %}
     </table>
+    <h2>{{ total }}</h2>
+    <form name="export" method="post">
+        <input type="submit" name="export_to_xml" value="Export to XML">
+    </form>
 
 </body>
 </html>
