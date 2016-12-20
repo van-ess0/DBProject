@@ -3,6 +3,7 @@ import db_orm
 from hashlib import sha1
 import datetime
 import random
+import tempfile
 
 from flask import *
 
@@ -13,92 +14,138 @@ current_order = None
 current_user = None
 
 def export_order_to_xml():
+    if isinstance(current_order.worker_id, int):
+        current_order.worker_id = db_orm.Worker.get_by_id(current_order.worker_id)
+    if isinstance(current_order.worker_id.shop_id, int):
+        current_order.worker_id.shop_id = db_orm.Shop.get_by_id(current_order.worker_id.shop_id)
+    if isinstance(current_order.customer_id, int):
+        current_order.customer_id = db_orm.Customer.get_by_id(current_order.customer_id)
+
     from lxml import etree
     order = etree.Element("order")
 
-    id = etree.Element("id")
-    id.text = str(current_order.id)
-    order.append(id)
+    def fill_tag(parent, vals):
+        for val in vals:
+            child = etree.Element(val[0])
+            child.text = str(val[1])
+            parent.append(child)
 
-    current_order.worker_id = db_orm.Worker.get_by_id(current_order.worker_id)
+    children = [
+        ('id', current_order.id),
+        ('date', current_order.date),
+    ]
+
+    fill_tag(order, children)
+
     worker = etree.Element("worker")
     order.append(worker)
-    worker_id = etree.Element("id")
-    worker_id.text = str(current_order.worker_id.id)
-    worker.append(worker_id)
 
-    current_order.worker_id.shop_id = db_orm.Shop.get_by_id(current_order.worker_id.shop_id)
+    children = [
+        ('id', current_order.worker_id.id),
+        ('name', current_order.worker_id.name),
+        ('cellphone', current_order.worker_id.cellphone),
+        ('email', current_order.worker_id.email),
+    ]
+
+    fill_tag(worker, children)
+
     worker_shop = etree.Element("shop")
     worker.append(worker_shop)
 
-    worker_shop_id = etree.Element("id")
-    worker_shop_id.text = str(current_order.worker_id.shop_id.id)
-    worker_shop.append(worker_shop_id)
+    children = [
+        ('id', current_order.worker_id.shop_id.id),
+        ('adress', current_order.worker_id.shop_id.adress),
+        ('name', current_order.worker_id.shop_id.name),
+        ('cellphone', current_order.worker_id.shop_id.cellphone),
+        ('email', current_order.worker_id.shop_id.email),
+    ]
 
-    worker_shop_adress = etree.Element("adress")
-    worker_shop_adress.text = current_order.worker_id.shop_id.adress
-    worker_shop.append(worker_shop_adress)
+    fill_tag(worker_shop, children)
 
-    worker_shop_name = etree.Element("name")
-    worker_shop_name.text = current_order.worker_id.shop_id.name
-    worker_shop.append(worker_shop_name)
-
-    worker_shop_cellphone = etree.Element("cellphone")
-    worker_shop_cellphone.text = current_order.worker_id.shop_id.cellphone
-    worker_shop.append(worker_shop_cellphone)
-
-    worker_shop_email = etree.Element("email")
-    worker_shop_email.text = current_order.worker_id.shop_id.email
-    worker_shop.append(worker_shop_email)
-
-    worker_name = etree.Element("name")
-    worker_name.text = current_order.worker_id.name
-    worker.append(worker_name)
-
-    worker_cellphone = etree.Element("cellphone")
-    worker_cellphone.text = current_order.worker_id.cellphone
-    worker.append(worker_cellphone)
-
-    worker_email = etree.Element("email")
-    worker_email.text = current_order.worker_id.email
-    worker.append(worker_email)
-
-    current_order.customer_id = db_orm.Customer.get_by_id(current_order.customer_id)
     customer = etree.Element("customer")
     order.append(customer)
 
-    customer_id = etree.Element("id")
-    customer_id.text = str(current_order.customer_id.id)
-    customer.append(customer_id)
+    children = [
+        ('id', current_order.customer_id.id),
+        ('name', current_order.customer_id.name),
+        ('adress', current_order.customer_id.adress),
+        ('cellphone', current_order.customer_id.cellphone),
+        ('email', current_order.customer_id.email),
+        ('login', current_order.customer_id.login),
+    ]
 
-    customer_name = etree.Element("name")
-    customer_name.text = current_order.customer_id.name
-    customer.append(customer_name)
+    fill_tag(customer, children)
 
-    customer_adress = etree.Element("adress")
-    customer_adress.text = current_order.customer_id.adress
-    customer.append(customer_adress)
+    positions = etree.Element("order_positions")
+    order.append(positions)
 
-    customer_cellphone = etree.Element("cellphone")
-    customer_cellphone.text = current_order.customer_id.cellphone
-    customer.append(customer_cellphone)
+    for line in current_order.get_positions():
+        line.product_id = db_orm.Product.get_by_id(line.product_id)
+        line.product_id.type_id = db_orm.Type.get_by_id(line.product_id.type_id)
+        line.product_id.diller_id = db_orm.Diller.get_by_id(line.product_id.diller_id)
+        line.product_id.shop_id = db_orm.Shop.get_by_id(line.product_id.shop_id)
 
-    customer_email = etree.Element("email")
-    customer_email.text = current_order.customer_id.email
-    customer.append(customer_email)
+        position = etree.Element("order_position")
+        positions.append(position)
 
-    customer_login = etree.Element("login")
-    customer_login.text = current_order.customer_id.login
-    customer.append(customer_login)
+        children = [
+            ('id', line.id),
+            ('qty', line.qty),
+        ]
 
-    date = etree.Element("date")
-    date.text = str(current_order.date)
-    order.append(date)
+        fill_tag(position, children)
 
-    print(etree.tostring(order, pretty_print=True))
-    # TODO: Add lines
-    # TODO: Export into file
+        product = etree.Element("product")
+        position.append(product)
 
+        children = [
+            ('id', line.product_id.id),
+            ('name', line.product_id.name),
+            ('articul', line.product_id.articul),
+            ('color', line.product_id.color),
+            ('price', line.product_id.price),
+            ('number_left', line.product_id.number_left),
+        ]
+
+        fill_tag(product, children)
+
+        product_type = etree.Element("type")
+        product.append(product_type)
+
+        children = [
+            ('id', line.product_id.type_id.id),
+            ('name', line.product_id.type_id.name),
+        ]
+
+        fill_tag(product_type, children)
+
+        product_diller = etree.Element("diller")
+        product.append(product_diller)
+
+        children = [
+            ('id', line.product_id.diller_id.id),
+            ('adress', line.product_id.diller_id.adress),
+            ('company', line.product_id.diller_id.company),
+            ('cellphone', line.product_id.diller_id.cellphone),
+            ('email', line.product_id.diller_id.email),
+        ]
+
+        fill_tag(product_diller, children)
+
+        product_shop = etree.Element("shop")
+        product.append(product_shop)
+
+        children = [
+            ('id', current_order.worker_id.shop_id.id),
+            ('adress', current_order.worker_id.shop_id.adress),
+            ('name', current_order.worker_id.shop_id.name),
+            ('cellphone', current_order.worker_id.shop_id.cellphone),
+            ('email', current_order.worker_id.shop_id.email),
+        ]
+
+        fill_tag(product_shop, children)
+
+    return etree.tostring(order, pretty_print=True)
 
 def add_to_cart(id):
     global current_order, current_user
@@ -119,7 +166,6 @@ def add_to_cart(id):
     else:
         order_line.write({'qty': order_line.qty + 1})
     current_order.order_lines[id] = current_order.order_lines.get(id, 0) + 1
-    print(current_order.__dict__)
 
 
 @app.route('/')
@@ -233,7 +279,16 @@ def order_page():
         lines.append(new_line)
     total = sum((line.product_id.price * line.qty) for line in lines)
     if request.method == 'POST':
-        export_order_to_xml()
+        tf = tempfile.NamedTemporaryFile()
+        tf.write(export_order_to_xml())
+        tf.seek(0)
+        # return tf.read()
+        return send_file(
+            tf.name,
+            mimetype="text/xml",
+            as_attachment=True,
+            attachment_filename='Order #{}.xml'.format(current_order.id),
+        )
     return render_template('order_page.html', order=current_order, lines=lines, total=total)
 
 

@@ -125,6 +125,15 @@ class Order(AbstractORM):
         # self.worker_id = Worker.get_by_id(self.worker_id)
         # self.customer_id = Customer.get_by_id(self.customer_id)
 
+    def get_positions(self):
+        """Returns list or OrderPosition objects related to this order"""
+        SQL = """SElECT * FROM order_position WHERE order_id = {id}""".format(id=self.id)
+        cr.execute(SQL)
+        lines = []
+        for line in cr.fetchall():
+            lines.append(OrderPosition(line))
+        return lines
+
 
 class OrderPosition(AbstractORM):
     table = 'order_position'
