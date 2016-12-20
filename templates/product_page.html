@@ -16,5 +16,6 @@
         <li>{{ 'Цена: {}'.format(product.price) }}</li>
     </ul>
     <a href="{{ url_for('shop_page', shop_name=product.shop_id.name) }}">Назад в магазин</a>
+    <p><a href="{{ url_for('order_page') }}">Ваш заказ</a></p>
 </body>
 </html>

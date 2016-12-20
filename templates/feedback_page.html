@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Feedback</title>
+</head>
+<body>
+<form name="feedback" method="post" style="margin-top: 5%;">
+    <p><b>Комментарий:</b></p>
+    <input type="text"
+           placeholder="Введите ваш отзыв"
+           id="comment_feedback"
+           value="{{ request.form.feedback }}"
+            name="feedback">
+
+    <p>
+        <input class="btn btn-default" value="Отправить" type="submit">
+    </p>
+
+</form>
+</body>
+</html>

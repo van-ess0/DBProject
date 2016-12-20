@@ -4,10 +4,10 @@ DROP DATABASE project;
 
 CREATE DATABASE project
     WITH 
-    OWNER = "Van-ess0"
+    OWNER = "chris142"
     ENCODING = 'UTF8'
-    LC_COLLATE = 'ru_RU.UTF-8'
-    LC_CTYPE = 'ru_RU.UTF-8';
+    LC_COLLATE = 'en_GB.UTF-8'
+    LC_CTYPE = 'en_GB.UTF-8';
 
 \c project;
 
@@ -72,7 +72,13 @@ customer_id int REFERENCES customer(id)
 CREATE TABLE order_position (
 id serial NOT NULL PRIMARY KEY,
 product_id int REFERENCES product(id),
-qty int NOT NULL CHECK (qty > 0) ON DELETE RESTRICT,
+qty int NOT NULL CHECK (qty > 0),
 order_id int REFERENCES "order"(id) ON DELETE CASCADE,
 UNIQUE (product_id, order_id)
+);
+
+CREATE TABLE feedback (
+id serial NOT NULL PRIMARY KEY,
+body text,
+order_id int REFERENCES "order"(id) ON DELETE CASCADE
 );

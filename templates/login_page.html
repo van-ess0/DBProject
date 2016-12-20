@@ -4,20 +4,20 @@
     <h1>Hello {{ name }}!</h1>
 {% else %}
     <form name="login" method="post">
-    <p><b>*Ваш логин:</b><br>
-        <input name="username" type="text" size="20" value="{{ request.form.username }}">
+    <p><b>*Логин:</b><br>
+        <input name="username" type="text" size="20" placeholder="anonim88"  value="{{ request.form.username }}">
     <p><b>*Пароль:</b><br>
-        <input name="password" type="password" size="20" value="{{ request.form.password }}">
+        <input name="password" type="password" size="20" placeholder="CatBoris45" value="{{ request.form.password }}">
         {% if register %}
-            <p><b>*Ваше имя:</b><br>
-                <input name="name" type="text" size="20" value="{{ request.form.name }}">
+            <p><b>*ФИО:</b><br>
+                <input name="name" type="text" size="20" placeholder="Иванов Иван Иванович" value="{{ request.form.name }}">
             <p><b>*Номер:</b><br>
-                <input name="cellphone" type="text" size="20" value="{{ request.form.cellphone }}">
+                <input name="cellphone" type="text" size="20" placeholder="+79998883939" value="{{ request.form.cellphone }}">
                 <br/>
-            <p><b>*Ваш адрес:</b><br>
-                <input name="address" type="text" size="20" value="{{ request.form.address }}">
+            <p><b>*Адрес:</b><br>
+                <input name="address" type="text" size="20" placeholder="г.Москва пр.Ленина д.10 кв.25" value="{{ request.form.address }}">
             <p><b>Email:</b><br>
-            <input name="email" type="text" size="20" value="{{ request.form.email }}">
+            <input name="email" type="text" size="20" placeholder="anonim@yandex.ru" value="{{ request.form.email }}">
             <br/>
         {% endif %}
         <br/>

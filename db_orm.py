@@ -4,7 +4,7 @@ from psycopg2.extensions import AsIs
 
 try:
     # SuperUser cursor
-    conn = psycopg2.connect("dbname='project' user='Van-ess0' host='localhost' password=''")
+    conn = psycopg2.connect("dbname='project' user='chris142' host='localhost' password='qwerty'")
     cr = conn.cursor()
     crd = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 except Exception as e:
@@ -169,3 +169,9 @@ class Worker(AbstractORM):
 
     def __init__(self, data):
         self.id, self.name, self.shop_id, self.cellphone, self.email = data
+
+class Feedback(AbstractORM):
+    table = 'feedback'
+
+    def __init__(self, data):
+        self.id, self.body, self.order_id = data

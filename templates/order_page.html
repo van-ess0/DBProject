@@ -9,16 +9,18 @@
     <table>
         {% for line in lines %}
             <tr>
+		<td>{{ line.product_id.shop_id.name }}</td>
                 <td>{{ line.product_id.name }}</td>
                 <td>{{ line.qty }}</td>
                 <td>{{ line.product_id.price * line.qty }}</td>
             </tr>
         {% endfor %}
     </table>
-    <h2>{{ total }}</h2>
+    <h2>{{"Сумма к оплате: {}".format(total) }}</h2>
     <form name="export" method="post">
         <input type="submit" name="export_to_xml" value="Export to XML">
     </form>
-
+    <p><a href="{{url_for('shop_select_page')}}"> К списку магазинов<a></p>
+    <a href="{{ url_for('feedback_page') }}">Оставить Отзыв</a>
 </body>
 </html>

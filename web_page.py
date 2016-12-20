@@ -214,9 +214,17 @@ def register_page():
 
 @app.route('/shop_select', methods=['GET', 'POST'])
 def shop_select_page():
+    global current_order
+    show_order_link = False
+    if current_order:
+        show_order_link = True
     if request.method == 'POST':
         pass
-    return render_template('shop_select_page.html', shops=db_orm.Shop.get_all())
+    return render_template(
+        'shop_select_page.html',
+        shops=db_orm.Shop.get_all(),
+        show_order_link=show_order_link,
+    )
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -250,8 +258,6 @@ def shop_page(shop_name=None):
         for id in ids:
             if request.form.get(str(id)):
                 add_to_cart(id)
-            pass
-        print('hello', request.form)
     return render_template('shop_page.html', products=products)
 
 
@@ -263,11 +269,10 @@ def product_page(product_id=None):
     product.type_id = db_orm.Type.get_by_id(product.type_id)
     product.diller_id = db_orm.Diller.get_by_id(product.diller_id)
     product.shop_id = db_orm.Shop.get_by_id(product.shop_id)
-    print(product.diller_id.company)
     return render_template('product_page.html', product=product)
 
 
-@app.route('/order', methods=['POST', "GET"])
+@app.route('/order', methods=['POST', "GET", 'PUT'])
 def order_page():
     global current_order
     if not current_order:
@@ -276,6 +281,7 @@ def order_page():
     for id in current_order.order_lines.keys():
         new_line = db_orm.OrderPosition.get_by_order_and_product(current_order.id, id)
         new_line.product_id = db_orm.Product.get_by_id(new_line.product_id)
+        new_line.product_id.shop_id = db_orm.Shop.get_by_id(new_line.product_id.shop_id)
         lines.append(new_line)
     total = sum((line.product_id.price * line.qty) for line in lines)
     if request.method == 'POST':
@@ -289,7 +295,20 @@ def order_page():
             as_attachment=True,
             attachment_filename='Order #{}.xml'.format(current_order.id),
         )
+
     return render_template('order_page.html', order=current_order, lines=lines, total=total)
+
+@app.route('/feedback', methods=['GET', 'POST'])
+def feedback_page():
+    if request.method == 'POST':
+        feedback = request.form['feedback']
+        if feedback:
+            fb = db_orm.Feedback.create({
+                'body': feedback,
+                'order_id': current_order.id,
+            })
+            return redirect(url_for('order_page'))
+    return render_template('feedback_page.html')
 
 
 app.secret_key = "\xa80\xe7g\xac<>\xb1$\xfa0\x1bK\x02\xb1aeKQ\x9f\xfa\xfb\xc1\xa4"
