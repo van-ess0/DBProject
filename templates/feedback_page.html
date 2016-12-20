@@ -5,18 +5,25 @@
     <title>Feedback</title>
 </head>
 <body>
-<form name="feedback" method="post" style="margin-top: 5%;">
-    <p><b>Комментарий:</b></p>
+<form   name="feedback"
+	method="post"
+	style="margin-top: 5%;">
+    <p><b>Ваш отзыв/вопрос:</b></p>
     <input type="text"
-           placeholder="Введите ваш отзыв"
+           placeholder="Сообщение"
            id="comment_feedback"
            value="{{ request.form.feedback }}"
-            name="feedback">
+           name="feedback"
+	class="text">
 
-    <p>
-        <input class="btn btn-default" value="Отправить" type="submit">
-    </p>
+<style>
+input.text {width:  200px; height: 70px;}
+</style>
+
+    <p><input class="btn btn-default" value="Отправить" type="submit"></p>
 
 </form>
+
+<p><a href="{{url_for('order_page')}}"> Назад<a></p>
 </body>
 </html>
