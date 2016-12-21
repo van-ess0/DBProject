@@ -214,7 +214,7 @@ def register_page():
 
 @app.route('/shop_select', methods=['GET', 'POST'])
 def shop_select_page():
-    global current_order
+    global current_order, current_user
     show_order_link = False
     if current_order:
         show_order_link = True
@@ -224,6 +224,7 @@ def shop_select_page():
         'shop_select_page.html',
         shops=db_orm.Shop.get_all(),
         show_order_link=show_order_link,
+        show_admin_buttons=current_user.id == 1,
     )
 
 
