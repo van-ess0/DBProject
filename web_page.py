@@ -297,7 +297,7 @@ def product_page(product_id=None):
 
 @app.route('/order', methods=['POST', "GET", 'PUT'])
 def order_page():
-    global current_order
+    global current_order, current_user
     if not current_order:
         return render_template('shop_select_page.html')
     lines = current_order.get_positions()
@@ -322,7 +322,8 @@ def order_page():
                     'number_left': line.product_id.number_left - line.qty,
                 })
             current_order = None
-            return redirect(url_for('shop_select_page'))
+            current_user = None
+            return redirect(url_for('login_page'))
         for line in lines:
             if request.form.get(str(line.id)):
                 if int(request.form.get(str(line.id))) <= 0:
