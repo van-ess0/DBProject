@@ -163,9 +163,15 @@ def add_to_cart(id):
             'order_id': current_order.id,
             'qty': 1,
         })
+        current_order.order_lines[id] = 1
     else:
-        order_line.write({'qty': order_line.qty + 1})
-    current_order.order_lines[id] = current_order.order_lines.get(id, 0) + 1
+        order_line.product_id = db_orm.Product.get_by_id(order_line.product_id)
+        if order_line.product_id.number_left >= order_line.qty + 1:
+            order_line.write({'qty': order_line.qty + 1})
+            current_order.order_lines[id] = current_order.order_lines.get(id, 0) + 1
+        else:
+            flash('Вы пытаетесь добавить больше товаров, чем есть на складе', 'error')
+    return None
 
 
 @app.route('/')
@@ -251,26 +257,42 @@ def login_page():
 
 @app.route('/shop/<shop_name>', methods=['POST', 'GET'])
 def shop_page(shop_name=None):
+    global current_order
     if shop_name is None:
         abort(404)
+    show_order_link = False
     products = db_orm.Product.get_by_shop(shop_name)
+    products = list(filter(lambda p: p.number_left > 0, products))
     if request.method == 'POST':
         ids = [product.id for product in products]
         for id in ids:
             if request.form.get(str(id)):
                 add_to_cart(id)
-    return render_template('shop_page.html', products=products)
+    if current_order:
+        show_order_link = True
+    return render_template(
+        'shop_page.html',
+        products=products,
+        show_order_link=show_order_link,
+    )
 
 
 @app.route('/product/<product_id>')
 def product_page(product_id=None):
     if product_id is None:
         abort(404)
+    show_order_link = False
+    if current_order:
+        show_order_link = True
     product = db_orm.Product.get_by_id(product_id)
     product.type_id = db_orm.Type.get_by_id(product.type_id)
     product.diller_id = db_orm.Diller.get_by_id(product.diller_id)
     product.shop_id = db_orm.Shop.get_by_id(product.shop_id)
-    return render_template('product_page.html', product=product)
+    return render_template(
+        'product_page.html',
+        product=product,
+        show_order_link=show_order_link,
+    )
 
 
 @app.route('/order', methods=['POST', "GET", 'PUT'])
@@ -294,14 +316,24 @@ def order_page():
                 as_attachment=True,
                 attachment_filename='Order #{}.xml'.format(current_order.id),
             )
+        elif request.form.get('ok'):
+            for line in lines:
+                line.product_id.write({
+                    'number_left': line.product_id.number_left - line.qty,
+                })
+            current_order = None
+            return redirect(url_for('shop_select_page'))
         for line in lines:
             if request.form.get(str(line.id)):
                 if int(request.form.get(str(line.id))) <= 0:
                     line.delete()
                     continue
-                line.write({
-                    'qty': int(request.form.get(str(line.id))),
-                })
+                if int(request.form.get(str(line.id))) <= line.product_id.number_left:
+                    line.write({
+                        'qty': int(request.form.get(str(line.id))),
+                    })
+                else:
+                    flash('Вы пытаетесь добавить больше товаров, чем есть на складе', 'error')
         return redirect(url_for('order_page'))
 
     return render_template('order_page.html', order=current_order, lines=lines, total=total)
