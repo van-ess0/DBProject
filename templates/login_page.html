@@ -1,8 +1,15 @@
-<!doctype html>
-<title>Вход</title>
-{% if name %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Вход</title>
+	<link href="static/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+	{% if name %}
     <h1>Hello {{ name }}!</h1>
-{% else %}
+	{% else %}
     <form name="login" method="post">
     <p><b>*Логин:</b><br>
         <input name="username" type="text" size="20" placeholder="anonim88"  value="{{ request.form.username }}">
@@ -21,6 +28,7 @@
             <br/>
         {% endif %}
         <br/>
+		<br/>
         <input class="btn btn-default" type="submit" value="{{ 'Вход' if not register else 'Регистрация' }}">
         </form>
         <a href="{{ url_for('register_page') if not register else url_for('login_page') }}">
@@ -31,3 +39,10 @@
             <p class="error"><strong>Error:</strong> {{ error }}</p>
         {% endif %}
 {% endif %}
+
+<style>
+body { background-image: url("static/images/order.jpg"); -webkit-background-size: 200%;}
+</style>
+
+</body>
+</html>

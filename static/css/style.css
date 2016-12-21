@@ -1,0 +1,32 @@
+table {
+  font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+  font-size: 14px;
+  max-width: 60%;
+  width: 40%;
+  border-collapse: collapse;
+  text-align: left;
+}
+th {
+  font-weight: normal;
+  color: #039;
+  border-bottom: 2px solid #6678b1;
+  padding: 10px 8px;
+}
+td {
+  color: #669;
+  padding: 9px 8px;
+  transition: .3s linear;
+}
+tr:hover td{
+  color: #564AA6;
+}
+
+h1,h2 {
+font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+color: #564AA6;
+}
+
+body { background-image: url("static/images/order.jpg"); -webkit-background-size: 200%;
+font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+color: #564AA6;}
+
