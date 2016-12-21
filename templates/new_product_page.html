@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Product</title>
+</head>
+<body>
+    <h1>Создание новго продукта</h1>
+    <form method="post" name="new_product">
+        <p>Название</p>
+        <input type="text" value="" name="name">
+        <p>Артикул</p>
+        <input type="text" value="" name="articul">
+        <p>Цвет</p>
+        <input type="text" value="" name="color">
+        <p>Осталось</p>
+        <input type="text" value="" name="number_left">
+        <p>Цена</p>
+        <input type="text" value="" name="price">
+        <p>Тип</p>
+        <p><select name="type">
+            <option disabled>Выберите тип</option>
+            {% for type in types %}
+                <option value="{{ type.id }}">{{ type.name }}</option>
+            {% endfor %}
+        </select></p>
+        <p>Поставщик</p>
+        <p><select name="diller">
+            <option disabled>Выберите поставщика</option>
+            {% for diller in dillers %}
+                <option value="{{ diller.id }}">{{ diller.company }}</option>
+            {% endfor %}
+        </select></p>
+        <p>Магазин</p>
+        <p><select name="shop">
+            <option disabled>Выберите магазин</option>
+            {% for shop in shops %}
+                <option value="{{ shop.id }}">{{ shop.name }}</option>
+            {% endfor %}
+        </select></p>
+{#        <input type="text" value="" name="articul">#}
+{#        <input type="text" value="" name="articul">#}
+        <input type="submit">
+    </form>
+
+</body>
+</html>
