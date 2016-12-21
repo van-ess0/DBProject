@@ -317,6 +317,32 @@ def feedback_page():
             return redirect(url_for('order_page'))
     return render_template('feedback_page.html')
 
+@app.route('/new_product', methods=['GET', 'POST'])
+def new_product_page():
+    if current_user.id != 1:
+        abort(404)
+    types = db_orm.Type.get_all()
+    dillers = db_orm.Diller.get_all()
+    shops = db_orm.Shop.get_all()
+    if request.method == 'POST':
+        new_product = db_orm.Product.create({
+            'type_id': request.form.get('type'),
+            'diller_id': request.form.get('diller'),
+            'shop_id': request.form.get('shop'),
+            'name': request.form.get('name'),
+            'articul': request.form.get('diller'),
+            'color': request.form.get('color'),
+            'price': float(request.form.get('price')),
+            'number_left': int(request.form.get('number_left')),
+        })
+        return redirect(url_for('shop_select_page'))
+    return render_template(
+        'new_product_page.html',
+        types=types,
+        dillers=dillers,
+        shops = shops,
+    )
+
 
 app.secret_key = "\xa80\xe7g\xac<>\xb1$\xfa0\x1bK\x02\xb1aeKQ\x9f\xfa\xfb\xc1\xa4"
 app.run()

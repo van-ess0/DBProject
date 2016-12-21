@@ -5,13 +5,14 @@
     <title>Select Shop</title>
 </head>
 <body>
-    <ul id="products">
+<ul id="products">
     {% for shop in shops %}
         <li><a href={{ url_for('shop_page', shop_name=shop.name) }}>{{ shop.name }}</a></li>
     {% endfor %}
-    </ul>
-{% if show_order_link%}
-<p><a href="{{url_for('order_page')}}"> Перейти к заказу <a></p>
+</ul>
+{% if show_order_link %}
+    <p><a href="{{ url_for('order_page') }}"> Перейти к заказу <a></p>
+    <p><a href="{{ url_for('new_product_page') }}"> Создание нового продукта (id: 1 Only) <a></p>
 {% endif %}
 </body>
 </html>

@@ -38,7 +38,8 @@ INSERT INTO product (type_id, "name", articul, color, price, number_left, diller
 	
 
 INSERT INTO customer ("name", adress, cellphone, login, pwd_hash)
-	VALUES ('Barsukov S.A.', 'Nekrasova 36', '+79817869080', 'barsuk', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
+	VALUES ('God', 'Heaven', '+1000000000', 'admin', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
+	('Barsukov S.A.', 'Nekrasova 36', '+79817869080', 'barsuk', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
 	('Frolov E.G.', 'Chicherina 5', '239884', 'froloff', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
 	('Perepelov G.K.', 'Bohnyaka 11', '+78957893434', 'perepel', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
 	('Zubenko E.O.', 'Lenina 5', '9801786', 'zubizubi', 'd033e22ae348aeb5660fc2140aec35850c4da997');
