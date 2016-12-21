@@ -277,24 +277,31 @@ def order_page():
     global current_order
     if not current_order:
         return render_template('shop_select_page.html')
-    lines = []
-    for id in current_order.order_lines.keys():
-        new_line = db_orm.OrderPosition.get_by_order_and_product(current_order.id, id)
-        new_line.product_id = db_orm.Product.get_by_id(new_line.product_id)
-        new_line.product_id.shop_id = db_orm.Shop.get_by_id(new_line.product_id.shop_id)
-        lines.append(new_line)
+    lines = current_order.get_positions()
+    for line in lines:
+        line.product_id = db_orm.Product.get_by_id(line.product_id)
+        line.product_id.shop_id = db_orm.Shop.get_by_id(line.product_id.shop_id)
     total = sum((line.product_id.price * line.qty) for line in lines)
     if request.method == 'POST':
-        tf = tempfile.NamedTemporaryFile()
-        tf.write(export_order_to_xml())
-        tf.seek(0)
-        # return tf.read()
-        return send_file(
-            tf.name,
-            mimetype="text/xml",
-            as_attachment=True,
-            attachment_filename='Order #{}.xml'.format(current_order.id),
-        )
+        if request.form.get('export_to_xml'):
+            tf = tempfile.NamedTemporaryFile()
+            tf.write(export_order_to_xml())
+            tf.seek(0)
+            return send_file(
+                tf.name,
+                mimetype="text/xml",
+                as_attachment=True,
+                attachment_filename='Order #{}.xml'.format(current_order.id),
+            )
+        for line in lines:
+            if request.form.get(str(line.id)):
+                if int(request.form.get(str(line.id))) <= 0:
+                    line.delete()
+                    continue
+                line.write({
+                    'qty': int(request.form.get(str(line.id))),
+                })
+        return redirect(url_for('order_page'))
 
     return render_template('order_page.html', order=current_order, lines=lines, total=total)
 
