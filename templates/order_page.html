@@ -33,7 +33,7 @@ body { background-image: url("static/images/order.jpg"); -webkit-background-size
             </tr>
         {% endfor %}
     </table>
-    <input type="submit" value="Пересчитаь">
+    <input type="submit" value="Пересчитать">
     </form>
     <h2>Сумма к оплате: </h2><h2>{{total | round(2, 'common') }}</h2>
     <form name="export" method="post">
