@@ -14,7 +14,6 @@
             </script>
         {% endif %}
     {% endwith %}
-
     <link href="static/css/style.css" rel="stylesheet">
     <style>
         body {
@@ -27,14 +26,12 @@
 <h1>{{ "Заказ №{}".format(order.id) }}</h1>
 <form name="qty" method="post">
     <table>
-
         <tr>
             <th>Магазин</th>
             <th>Товар</th>
             <th>Количество</th>
             <th>Сумма</th>
         </tr>
-
         {% for line in lines %}
             <tr>
                 <td>{{ line.product_id.shop_id.name }}</td>
