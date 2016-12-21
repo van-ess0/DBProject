@@ -3,11 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <title>Ваш заказ</title>
+
+
+    <style>
+table {
+  font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+  font-size: 14px;
+  max-width: 60%;
+  width: 40%;
+  border-collapse: collapse;
+  text-align: left;
+}
+th {
+  font-weight: normal;
+  color: #039;
+  border-bottom: 2px solid #6678b1;
+  padding: 10px 8px;
+}
+td {
+  color: #669;
+  padding: 9px 8px;
+  transition: .3s linear;
+}
+tr:hover td{
+  color: #6699ff;
+}
+
+h1,h2 {
+font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+color: #6699ff;
+}
+
+
+
+body { background-image: url("static/images/order.jpg");}
+
+
+</style>
+
+
 </head>
 <body>
     <h1>{{ "Заказ №{}".format(order.id) }}</h1>
     <form name="qty" method="post">
     <table>
+
+	<tr>
+<th>Магазин</th><th>Товар</th><th>Количество</th><th>Сумма</th>
+</tr>
+
         {% for line in lines %}
             <tr>
 		<td>{{ line.product_id.shop_id.name }}</td>
@@ -27,6 +71,6 @@
         <input type="submit" name="export_to_xml" value="Export to XML">
     </form>
     <p><a href="{{url_for('shop_select_page')}}"> К списку магазинов<a></p>
-    <a href="{{ url_for('feedback_page') }}">Оставить Отзыв</a>
+    <a href="{{ url_for('feedback_page') }}">Оставить отзыв</a>
 </body>
 </html>
