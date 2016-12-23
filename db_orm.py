@@ -4,7 +4,7 @@ from psycopg2.extensions import AsIs
 
 try:
     # SuperUser cursor
-    conn = psycopg2.connect("dbname='project' user='Van-ess0' host='localhost' password=''")
+    conn = psycopg2.connect("dbname='project' user='chris142' host='localhost' password=''")
     cr = conn.cursor()
     crd = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 except Exception as e:
