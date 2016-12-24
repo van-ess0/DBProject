@@ -90,3 +90,6 @@ ENV/
 
 # Idea
 .idea*
+
+# macOS
+*.DS_Store

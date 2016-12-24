@@ -57,7 +57,7 @@ login varchar(80) UNIQUE NOT NULL
 CREATE TABLE worker (
 id serial NOT NULL PRIMARY KEY,
 "name" varchar(1000) NOT NULL,
-shop_id int REFERENCES shop(id),
+-- shop_id int REFERENCES shop(id),
 cellphone varchar(80) NOT NULL,
 email varchar(80)
 );

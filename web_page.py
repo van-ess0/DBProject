@@ -14,8 +14,6 @@ def export_order_to_xml():
     order_obj = db_orm.Order.get_by_id(session['order_id'])
     if isinstance(order_obj.worker_id, int):
         order_obj.worker_id = db_orm.Worker.get_by_id(order_obj.worker_id)
-    if isinstance(order_obj.worker_id.shop_id, int):
-        order_obj.worker_id.shop_id = db_orm.Shop.get_by_id(order_obj.worker_id.shop_id)
     if isinstance(order_obj.customer_id, int):
         order_obj.customer_id = db_orm.Customer.get_by_id(order_obj.customer_id)
 
@@ -46,19 +44,6 @@ def export_order_to_xml():
     ]
 
     fill_tag(worker, children)
-
-    worker_shop = etree.Element("shop")
-    worker.append(worker_shop)
-
-    children = [
-        ('id', order_obj.worker_id.shop_id.id),
-        ('adress', order_obj.worker_id.shop_id.adress),
-        ('name', order_obj.worker_id.shop_id.name),
-        ('cellphone', order_obj.worker_id.shop_id.cellphone),
-        ('email', order_obj.worker_id.shop_id.email),
-    ]
-
-    fill_tag(worker_shop, children)
 
     customer = etree.Element("customer")
     order.append(customer)
@@ -134,11 +119,11 @@ def export_order_to_xml():
         product.append(product_shop)
 
         children = [
-            ('id', order_obj.worker_id.shop_id.id),
-            ('adress', order_obj.worker_id.shop_id.adress),
-            ('name', order_obj.worker_id.shop_id.name),
-            ('cellphone', order_obj.worker_id.shop_id.cellphone),
-            ('email', order_obj.worker_id.shop_id.email),
+            ('id', line.product_id.shop_id.id),
+            ('adress', line.product_id.shop_id.adress),
+            ('name', line.product_id.shop_id.name),
+            ('cellphone', line.product_id.shop_id.cellphone),
+            ('email', line.product_id.shop_id.email),
         ]
 
         fill_tag(product_shop, children)
