@@ -176,7 +176,7 @@ class Worker(AbstractORM):
     table = 'worker'
 
     def __init__(self, data):
-        self.id, self.name, self.shop_id, self.cellphone, self.email = data
+        self.id, self.name, self.cellphone, self.email = data
 
 class Feedback(AbstractORM):
     table = 'feedback'

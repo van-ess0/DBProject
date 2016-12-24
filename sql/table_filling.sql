@@ -8,6 +8,7 @@ INSERT INTO "type" ("name")
 
 INSERT INTO diller (adress, company, cellphone)
 	VALUES ('Dachnaya 19', 'SilverBird', '+79098761212');
+
 INSERT INTO diller (adress, company, cellphone, email)
 	VALUES ('Kosmonavtov 9', 'Ogonek', '7683352', 'ogonek33@mail.ru'),
 	('Tihomirova 20', 'AndreenkoComp', '+79094568989', 'avandreenko@yandex.ru'),
@@ -44,12 +45,13 @@ INSERT INTO customer ("name", adress, cellphone, login, pwd_hash)
 	('Perepelov G.K.', 'Bohnyaka 11', '+78957893434', 'perepel', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
 	('Zubenko E.O.', 'Lenina 5', '9801786', 'zubizubi', 'd033e22ae348aeb5660fc2140aec35850c4da997');
 
-INSERT INTO worker ("name", shop_id, cellphone)
-	VALUES ('Mihalkov A.F.', 1, '6874567'),
-	('Fillipov A.F.', 1, '98288371'),
-	('Frolov P.I.', 2, '2348920');
-INSERT INTO worker ("name", shop_id, cellphone, email)
-	VALUES ('Piskunov V.A.', 3, '469964', 'foxsay@gmail.com');
+INSERT INTO worker ("name", cellphone)
+	VALUES ('Mihalkov A.F.', '6874567'),
+	('Fillipov A.F.', '98288371'),
+	('Frolov P.I.', '2348920');
+
+INSERT INTO worker ("name", cellphone, email)
+	VALUES ('Piskunov V.A.', '469964', 'foxsay@gmail.com');
 
 INSERT INTO "order" ("date", worker_id, customer_id)
 	VALUES ('2016-10-05', 1, 1);
