@@ -171,6 +171,14 @@ def add_to_cart(id):
     return None
 
 
+def check_if_possible(line):
+    product = db_orm.Product.get_by_id(line.product_id.id)
+    if product.number_left >= line.qty:
+        return True
+    else:
+        return False
+
+
 @app.route('/')
 def index():
     username = request.cookies.get('username')
@@ -204,6 +212,7 @@ def register_page():
                 })
                 app.logger.info("Created new user with id {}".format(new_user.id))
                 session['user_obj'] = new_user.id
+                session['order_id'] = None
                 return redirect(url_for('shop_select_page'))
             except Exception as e:
                 error = e
@@ -323,6 +332,13 @@ def order_page():
             )
         elif request.form.get('ok'):
             for line in lines:
+                if not check_if_possible(line):
+                    flash('Просим прощения, но товара {0} осталось только {1}шт'.format(
+                        line.product_id.name,
+                        line.porduct_id.number_left,
+                    ))
+                    return render_template('order_page.html', order=order_obj, lines=lines, total=total)
+            for line in lines:
                 line.product_id.write({
                     'number_left': line.product_id.number_left - line.qty,
                 })
@@ -342,7 +358,6 @@ def order_page():
                 else:
                     flash('Вы пытаетесь добавить больше товаров, чем есть на складе', 'error')
         return redirect(url_for('order_page'))
-
     return render_template('order_page.html', order=order_obj, lines=lines, total=total)
 
 @app.route('/feedback', methods=['GET', 'POST'])
@@ -385,4 +400,4 @@ def new_product_page():
 
 
 app.secret_key = "\xa80\xe7g\xac<>\xb1$\xfa0\x1bK\x02\xb1aeKQ\x9f\xfa\xfb\xc1\xa4"
-app.run(host='0.0.0.0')
+app.run(host='0.0.0.0', threaded=True)
