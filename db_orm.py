@@ -20,7 +20,7 @@ class AbstractORM():
     @classmethod
     def get_by_id(cls, id):
         '''Returns the object of element with id from parameter'''
-        SQL = '''SELECT * FROM {table} WHERE id = %s'''.format(table=cls.table)
+        SQL = '''SELECT * FROM "{table}" WHERE id = %s'''.format(table=cls.table)
         cr.execute(SQL, (id, ))
         return cls(cr.fetchone())
 
@@ -65,6 +65,7 @@ class AbstractORM():
         SQL = '''INSERT INTO "{table}" (%s) VALUES %s RETURNING *'''.format(table=cls.table)
         try:
             SQL = cr.mogrify(SQL, (AsIs(columns), tuple(values)))
+            print(SQL)
             cr.execute(SQL)
             conn.commit()
         except Exception as e:

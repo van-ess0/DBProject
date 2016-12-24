@@ -10,16 +10,14 @@ from flask import *
 app = Flask(__name__)
 app.debug = True
 
-current_order = None
-current_user = None
-
 def export_order_to_xml():
-    if isinstance(current_order.worker_id, int):
-        current_order.worker_id = db_orm.Worker.get_by_id(current_order.worker_id)
-    if isinstance(current_order.worker_id.shop_id, int):
-        current_order.worker_id.shop_id = db_orm.Shop.get_by_id(current_order.worker_id.shop_id)
-    if isinstance(current_order.customer_id, int):
-        current_order.customer_id = db_orm.Customer.get_by_id(current_order.customer_id)
+    order_obj = db_orm.Order.get_by_id(session['order_id'])
+    if isinstance(order_obj.worker_id, int):
+        order_obj.worker_id = db_orm.Worker.get_by_id(order_obj.worker_id)
+    if isinstance(order_obj.worker_id.shop_id, int):
+        order_obj.worker_id.shop_id = db_orm.Shop.get_by_id(order_obj.worker_id.shop_id)
+    if isinstance(order_obj.customer_id, int):
+        order_obj.customer_id = db_orm.Customer.get_by_id(order_obj.customer_id)
 
     from lxml import etree
     order = etree.Element("order")
@@ -31,8 +29,8 @@ def export_order_to_xml():
             parent.append(child)
 
     children = [
-        ('id', current_order.id),
-        ('date', current_order.date),
+        ('id', order_obj.id),
+        ('date', order_obj.date),
     ]
 
     fill_tag(order, children)
@@ -41,10 +39,10 @@ def export_order_to_xml():
     order.append(worker)
 
     children = [
-        ('id', current_order.worker_id.id),
-        ('name', current_order.worker_id.name),
-        ('cellphone', current_order.worker_id.cellphone),
-        ('email', current_order.worker_id.email),
+        ('id', order_obj.worker_id.id),
+        ('name', order_obj.worker_id.name),
+        ('cellphone', order_obj.worker_id.cellphone),
+        ('email', order_obj.worker_id.email),
     ]
 
     fill_tag(worker, children)
@@ -53,11 +51,11 @@ def export_order_to_xml():
     worker.append(worker_shop)
 
     children = [
-        ('id', current_order.worker_id.shop_id.id),
-        ('adress', current_order.worker_id.shop_id.adress),
-        ('name', current_order.worker_id.shop_id.name),
-        ('cellphone', current_order.worker_id.shop_id.cellphone),
-        ('email', current_order.worker_id.shop_id.email),
+        ('id', order_obj.worker_id.shop_id.id),
+        ('adress', order_obj.worker_id.shop_id.adress),
+        ('name', order_obj.worker_id.shop_id.name),
+        ('cellphone', order_obj.worker_id.shop_id.cellphone),
+        ('email', order_obj.worker_id.shop_id.email),
     ]
 
     fill_tag(worker_shop, children)
@@ -66,12 +64,12 @@ def export_order_to_xml():
     order.append(customer)
 
     children = [
-        ('id', current_order.customer_id.id),
-        ('name', current_order.customer_id.name),
-        ('adress', current_order.customer_id.adress),
-        ('cellphone', current_order.customer_id.cellphone),
-        ('email', current_order.customer_id.email),
-        ('login', current_order.customer_id.login),
+        ('id', order_obj.customer_id.id),
+        ('name', order_obj.customer_id.name),
+        ('adress', order_obj.customer_id.adress),
+        ('cellphone', order_obj.customer_id.cellphone),
+        ('email', order_obj.customer_id.email),
+        ('login', order_obj.customer_id.login),
     ]
 
     fill_tag(customer, children)
@@ -79,7 +77,7 @@ def export_order_to_xml():
     positions = etree.Element("order_positions")
     order.append(positions)
 
-    for line in current_order.get_positions():
+    for line in order_obj.get_positions():
         line.product_id = db_orm.Product.get_by_id(line.product_id)
         line.product_id.type_id = db_orm.Type.get_by_id(line.product_id.type_id)
         line.product_id.diller_id = db_orm.Diller.get_by_id(line.product_id.diller_id)
@@ -136,11 +134,11 @@ def export_order_to_xml():
         product.append(product_shop)
 
         children = [
-            ('id', current_order.worker_id.shop_id.id),
-            ('adress', current_order.worker_id.shop_id.adress),
-            ('name', current_order.worker_id.shop_id.name),
-            ('cellphone', current_order.worker_id.shop_id.cellphone),
-            ('email', current_order.worker_id.shop_id.email),
+            ('id', order_obj.worker_id.shop_id.id),
+            ('adress', order_obj.worker_id.shop_id.adress),
+            ('name', order_obj.worker_id.shop_id.name),
+            ('cellphone', order_obj.worker_id.shop_id.cellphone),
+            ('email', order_obj.worker_id.shop_id.email),
         ]
 
         fill_tag(product_shop, children)
@@ -148,30 +146,37 @@ def export_order_to_xml():
     return etree.tostring(order, pretty_print=True)
 
 def add_to_cart(id):
-    global current_order, current_user
-    if not current_order:
-        current_order = db_orm.Order.create({
+    if session['order_id']:
+        order_obj = db_orm.Order.get_by_id(session['order_id'])
+    else:
+        order_obj = db_orm.Order.create({
             'date': datetime.date.today(),
-            'customer_id': current_user.id,
+            'customer_id': db_orm.Customer.get_by_id(session['user_obj']).id,
             'worker_id': random.randrange(1, 5)
         })
-        current_order.order_lines = {}
-    order_line = db_orm.OrderPosition.get_by_order_and_product(current_order.id, id)
+        session['order_id'] = order_obj.id
+    order_line = db_orm.OrderPosition.get_by_order_and_product(order_obj.id, id)
     if not order_line:
         order_line = db_orm.OrderPosition.create({
             'product_id': id,
-            'order_id': current_order.id,
+            'order_id': order_obj.id,
             'qty': 1,
         })
-        current_order.order_lines[id] = 1
     else:
         order_line.product_id = db_orm.Product.get_by_id(order_line.product_id)
         if order_line.product_id.number_left >= order_line.qty + 1:
             order_line.write({'qty': order_line.qty + 1})
-            current_order.order_lines[id] = current_order.order_lines.get(id, 0) + 1
         else:
             flash('Вы пытаетесь добавить больше товаров, чем есть на складе', 'error')
     return None
+
+
+def check_if_possible(line):
+    product = db_orm.Product.get_by_id(line.product_id.id)
+    if product.number_left >= line.qty:
+        return True
+    else:
+        return False
 
 
 @app.route('/')
@@ -185,7 +190,6 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
-    global current_user
     error = None
     register = True
     if 'POST' == request.method:
@@ -207,7 +211,8 @@ def register_page():
                     'email': request.form['email'],
                 })
                 app.logger.info("Created new user with id {}".format(new_user.id))
-                current_user = new_user
+                session['user_obj'] = new_user.id
+                session['order_id'] = None
                 return redirect(url_for('shop_select_page'))
             except Exception as e:
                 error = e
@@ -220,9 +225,11 @@ def register_page():
 
 @app.route('/shop_select', methods=['GET', 'POST'])
 def shop_select_page():
-    global current_order, current_user
     show_order_link = False
-    if current_order:
+    order_obj = None
+    if session['order_id']:
+        order_obj = db_orm.Order.get_by_id(session['order_id'])
+    if order_obj:
         show_order_link = True
     if request.method == 'POST':
         pass
@@ -230,13 +237,12 @@ def shop_select_page():
         'shop_select_page.html',
         shops=db_orm.Shop.get_all(),
         show_order_link=show_order_link,
-        show_admin_buttons=current_user.id == 1,
+        show_admin_buttons=db_orm.Customer.get_by_id(session['user_obj']).id == 1,
     )
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
-    global current_user
     error = None
     register = False
     users = db_orm.Customer.get_all()
@@ -246,7 +252,8 @@ def login_page():
             for user in users:
                 if request.form['username'] == user.login and sha1(
                         request.form['password'].encode('utf-8')).hexdigest() == user.pwd_hash:
-                    current_user = user
+                    session['user_obj'] = user.id
+                    session['order_id'] = None
                     return redirect(url_for('shop_select_page'))
             if not flag:
                 error = 'Invalid Credentials. Please try again.'
@@ -257,7 +264,6 @@ def login_page():
 
 @app.route('/shop/<shop_name>', methods=['POST', 'GET'])
 def shop_page(shop_name=None):
-    global current_order
     if shop_name is None:
         abort(404)
     show_order_link = False
@@ -268,7 +274,10 @@ def shop_page(shop_name=None):
         for id in ids:
             if request.form.get(str(id)):
                 add_to_cart(id)
-    if current_order:
+    order_obj = None
+    if session['order_id']:
+        order_obj = db_orm.Order.get_by_id(session['order_id'])
+    if order_obj:
         show_order_link = True
     return render_template(
         'shop_page.html',
@@ -282,7 +291,10 @@ def product_page(product_id=None):
     if product_id is None:
         abort(404)
     show_order_link = False
-    if current_order:
+    order_obj = None
+    if session['order_id']:
+        order_obj = db_orm.Order.get_by_id(session['order_id'])
+    if order_obj:
         show_order_link = True
     product = db_orm.Product.get_by_id(product_id)
     product.type_id = db_orm.Type.get_by_id(product.type_id)
@@ -297,10 +309,12 @@ def product_page(product_id=None):
 
 @app.route('/order', methods=['POST', "GET", 'PUT'])
 def order_page():
-    global current_order, current_user
-    if not current_order:
+    order_obj = None
+    if session['order_id']:
+        order_obj = db_orm.Order.get_by_id(session['order_id'])
+    if not order_obj:
         return render_template('shop_select_page.html')
-    lines = current_order.get_positions()
+    lines = order_obj.get_positions()
     for line in lines:
         line.product_id = db_orm.Product.get_by_id(line.product_id)
         line.product_id.shop_id = db_orm.Shop.get_by_id(line.product_id.shop_id)
@@ -314,15 +328,23 @@ def order_page():
                 tf.name,
                 mimetype="text/xml",
                 as_attachment=True,
-                attachment_filename='Order #{}.xml'.format(current_order.id),
+                attachment_filename='Order #{}.xml'.format(order_obj.id),
             )
         elif request.form.get('ok'):
+            for line in lines:
+                if not check_if_possible(line):
+                    flash('Просим прощения, но товара {0} осталось только {1}шт'.format(
+                        line.product_id.name,
+                        line.porduct_id.number_left,
+                    ))
+                    return render_template('order_page.html', order=order_obj, lines=lines, total=total)
             for line in lines:
                 line.product_id.write({
                     'number_left': line.product_id.number_left - line.qty,
                 })
-            current_order = None
-            current_user = None
+                order_obj = None
+                session['order_id'] = None
+            #current_user = None
             return redirect(url_for('login_page'))
         for line in lines:
             if request.form.get(str(line.id)):
@@ -336,8 +358,7 @@ def order_page():
                 else:
                     flash('Вы пытаетесь добавить больше товаров, чем есть на складе', 'error')
         return redirect(url_for('order_page'))
-
-    return render_template('order_page.html', order=current_order, lines=lines, total=total)
+    return render_template('order_page.html', order=order_obj, lines=lines, total=total)
 
 @app.route('/feedback', methods=['GET', 'POST'])
 def feedback_page():
@@ -346,14 +367,14 @@ def feedback_page():
         if feedback:
             fb = db_orm.Feedback.create({
                 'body': feedback,
-                'order_id': current_order.id,
+                'order_id': session['order_id'],
             })
             return redirect(url_for('order_page'))
     return render_template('feedback_page.html')
 
 @app.route('/new_product', methods=['GET', 'POST'])
 def new_product_page():
-    if current_user.id != 1:
+    if db_orm.Customer.get_by_id(session['user_obj']).id != 1:
         abort(404)
     types = db_orm.Type.get_all()
     dillers = db_orm.Diller.get_all()
@@ -379,4 +400,4 @@ def new_product_page():
 
 
 app.secret_key = "\xa80\xe7g\xac<>\xb1$\xfa0\x1bK\x02\xb1aeKQ\x9f\xfa\xfb\xc1\xa4"
-app.run()
+app.run(host='0.0.0.0', threaded=True)

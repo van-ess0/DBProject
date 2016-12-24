@@ -3,11 +3,11 @@
 DROP DATABASE project;
 
 CREATE DATABASE project
-    WITH 
-    OWNER = "chris142"
+    WITH
+    OWNER = "Van-ess0"
     ENCODING = 'UTF8'
-    LC_COLLATE = 'en_GB.UTF-8'
-    LC_CTYPE = 'en_GB.UTF-8';
+    LC_COLLATE = 'ru_RU.UTF-8'
+    LC_CTYPE = 'ru_RU.UTF-8';
 
 \c project;
 
@@ -38,8 +38,8 @@ type_id int NOT NULL REFERENCES "type"(id),
 "name" varchar(80) NOT NULL,
 articul varchar(80) NOT NULL,
 color varchar(80),
-price real NOT NULL CHECK (price > 0),
-number_left int NOT NULL,
+price real NOT NULL CHECK (price >= 0),
+number_left int NOT NULL CHECK (price >= 0),
 diller_id int REFERENCES diller(id),
 shop_id int REFERENCES shop(id)
 );
