@@ -17,7 +17,7 @@ def export_order_to_xml():
     if isinstance(order_obj.worker_id.shop_id, int):
         order_obj.worker_id.shop_id = db_orm.Shop.get_by_id(order_obj.worker_id.shop_id)
     if isinstance(order_obj.customer_id, int):
-        order_obj.customer_id = db_orm.Customer.get_by_id(session['order_id'].customer_id)
+        order_obj.customer_id = db_orm.Customer.get_by_id(order_obj.customer_id)
 
     from lxml import etree
     order = etree.Element("order")
@@ -146,17 +146,15 @@ def export_order_to_xml():
     return etree.tostring(order, pretty_print=True)
 
 def add_to_cart(id):
-    order_obj = None
     if session['order_id']:
         order_obj = db_orm.Order.get_by_id(session['order_id'])
-    if not order_obj:
+    else:
         order_obj = db_orm.Order.create({
             'date': datetime.date.today(),
             'customer_id': db_orm.Customer.get_by_id(session['user_obj']).id,
             'worker_id': random.randrange(1, 5)
         })
         session['order_id'] = order_obj.id
-        order_obj.order_lines = {}
     order_line = db_orm.OrderPosition.get_by_order_and_product(order_obj.id, id)
     if not order_line:
         order_line = db_orm.OrderPosition.create({
@@ -164,12 +162,10 @@ def add_to_cart(id):
             'order_id': order_obj.id,
             'qty': 1,
         })
-        order_obj.order_lines[id] = 1
     else:
         order_line.product_id = db_orm.Product.get_by_id(order_line.product_id)
         if order_line.product_id.number_left >= order_line.qty + 1:
             order_line.write({'qty': order_line.qty + 1})
-            order_obj.order_lines[id] = order_obj.order_lines.get(id, 0) + 1
         else:
             flash('Вы пытаетесь добавить больше товаров, чем есть на складе', 'error')
     return None
@@ -222,7 +218,7 @@ def register_page():
 def shop_select_page():
     show_order_link = False
     order_obj = None
-    if session['odred_id']:
+    if session['order_id']:
         order_obj = db_orm.Order.get_by_id(session['order_id'])
     if order_obj:
         show_order_link = True
@@ -248,7 +244,7 @@ def login_page():
                 if request.form['username'] == user.login and sha1(
                         request.form['password'].encode('utf-8')).hexdigest() == user.pwd_hash:
                     session['user_obj'] = user.id
-                    session['odred_id'] = None
+                    session['order_id'] = None
                     return redirect(url_for('shop_select_page'))
             if not flag:
                 error = 'Invalid Credentials. Please try again.'
@@ -270,7 +266,7 @@ def shop_page(shop_name=None):
             if request.form.get(str(id)):
                 add_to_cart(id)
     order_obj = None
-    if session['odred_id']:
+    if session['order_id']:
         order_obj = db_orm.Order.get_by_id(session['order_id'])
     if order_obj:
         show_order_link = True
@@ -287,7 +283,7 @@ def product_page(product_id=None):
         abort(404)
     show_order_link = False
     order_obj = None
-    if session['odred_id']:
+    if session['order_id']:
         order_obj = db_orm.Order.get_by_id(session['order_id'])
     if order_obj:
         show_order_link = True
@@ -305,7 +301,7 @@ def product_page(product_id=None):
 @app.route('/order', methods=['POST', "GET", 'PUT'])
 def order_page():
     order_obj = None
-    if session['odred_id']:
+    if session['order_id']:
         order_obj = db_orm.Order.get_by_id(session['order_id'])
     if not order_obj:
         return render_template('shop_select_page.html')
